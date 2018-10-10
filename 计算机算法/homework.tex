@@ -1,0 +1,147 @@
+\documentclass[UTF8]{ctexart}
+\title{算法作业}
+\author{2018E8018661007   张振国}
+\date{\today}
+
+\usepackage{amsmath}
+\usepackage{xfrac}
+\usepackage{algorithm}  
+\usepackage{algorithmicx}  
+\usepackage{algpseudocode} 
+\usepackage{graphicx}%图片
+
+\begin{document}
+\maketitle %添加这个制作title页面
+
+
+\section{问题1}
+从2个数据库中寻找第n小的数。
+
+\subsection{算法简述}
+由问题分析可知，向数据库输入一个k，数据库会返回第k小的数；2个数据库中共2n个数据都不相同；算法复杂度要求为O(log n)\\
+该问题可以看成是在2个等长有序数组a,b中寻找2个数组整体的中位数。
+由于总共2n个数，其中位数必定是中间2个数的和的一半，而原问题是求第n小的数，因此只需要取中间2个数的前1个。\\
+分析：可以将问题divide为分别寻找2个数组的中位数，然后使用中位数将1个数组分为2个数组，再通过比较4个小数组头尾的值的大小判断整体所求的中位数位于哪两个小数组内，由于位于2侧的2个小数组等长，因此舍弃掉的话对所求中位数无影响。\\
+随后采用递归思想，继续求小数组中位数对数组进行分割，将可能存在所求中位数的两个数组保留，另外2个数组舍弃。直到最后能够通过常数步比较得到中位数为止。
+
+\subsection{算法伪代码}
+	\begin{algorithm}[H]
+		\caption{递归求中位数} 
+		\begin{algorithmic}[1] %每行显示行号 
+		\Require 2个数组的左右边界下标  
+            	\Ensure 中位数
+            	\Function {FindMedian}{$leftA,rightA,leftB,rightB$}
+            		\If {$rightA-leftA <= 1$}
+            			\State sort all elements in two arrays
+            			\State get the $median$ or the first number of two medians.
+            		\EndIf
+            		\State \Return $median$
+            		\State determine two arrays' relationship,互斥还是相交
+            		\If{$leftA>rightB || leftB>rightA$}
+            			\If{$leftA>rightB$} \State \Return $rightB$
+            			\EndIf
+            			\If{$leftB>rightA$} \State \Return $rightA$
+            			\EndIf
+            		\Else
+            			\State $medianA \gets (leftA+rightA)/2$
+            			\State $medianB \gets (leftB+rightB)/2$
+            			\If{$medianA<medianB$}
+            				\State \Return \Call{FindMedian}{$medianA,rightA,leftB,medianB$}
+					\Else
+						\State \Return \Call{FindMedian}{$leftA,medianA,medianB,rightB$}
+            			\EndIf
+            		\EndIf
+            	\EndFunction 
+            	\State 
+		\end{algorithmic}
+	\end{algorithm}
+
+\subsection{子问题简化图}
+	\includegraphics[width = 0.95\textwidth]{subproblem-reduction-graph-1.jpg}
+	
+\subsection{算法正确性证明}
+	略
+
+\subsection{算法复杂性分析}
+	略
+\clearpage
+
+\section{问题2}
+求二叉树中任意两节点的最远距离。
+\subsection{算法简述}
+任意2个节点的最远距离，可以理解为2个节点之间的路径穿过的祖先节点的左子树和右子树的最深距离的和。\\
+因此求任意2个节点的最远距离可以转化为求每个节点的左子树和右子树的最深深度，然后再遍历一遍所有节点，将每个节点的左右子树的最深深度相加的和取最大值即为所求的最远距离。
+\subsection{算法伪代码}
+	\begin{algorithm}[H]
+		\caption{求二叉树中任意两节点的最远距离} 
+		\begin{algorithmic} %每行显示行号 
+			\Require   $currentNode$当前节点,$maxDistance$用于存储最大距离的参数
+            		\Ensure   $currentMaxDistance$ 当前节点的树的最大深度
+			\Function{FindMaxDistance}{$currentNode,maxDistance$}
+			\If{$leftNode$ exists}
+				\State $leftMax \gets$ \Call{FindMaxDistance}{$leftNode,maxDistance$} $+1$
+			\Else
+				\State $leftMax \gets$ $0$
+			\EndIf
+			\If{$rightNode$ exists}
+				\State $rightMax \gets$ \Call{FindMaxDistance}{$rightNode,maxDistance$} $+1$
+			\Else
+				\State $rightMax \gets$ $0$
+			\EndIf
+			$currentMaxDistance \gets  leftMax + rightMax$  
+			\If{$currentMaxDistance>maxDistance$}
+				\State $maxDistance \gets currentMaxDistance$
+			\EndIf
+			\State \Return \Call{Max}{$leftMax,rightMax$}
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
+\subsection{子问题简化图}
+	\includegraphics[width = 1\textwidth]{subproblem-reduction-graph-2.jpg}
+	
+\subsection{算法正确性证明}
+	略
+
+\subsection{算法复杂性分析}
+	略
+\clearpage
+
+\section{问题3}
+找出完全二叉树的一个局部极小值
+\subsection{算法简述}
+找出完全二叉树的一个局部极小值,即探测左右孩子节点的值是否比自己的大，则此节点的值为局部极小值。
+如果有孩子节点的值比自己的小，则说明此节点不是局部极小值，也说明孩子节点可能为局部极小值，从而去看孩子节点的孩子节点的值的大小。\\
+那么该问题可divide为判断该节点是否为局部极小值，若不是则继续递归判断值比自己小的孩子节点是否为局部极小值。
+\subsection{算法伪代码}
+	\begin{algorithm}[H]
+		\caption{找出完全二叉树的一个局部极小值} 
+		\begin{algorithmic} %每行显示行号 
+			\Require   $currentNode$当前节点
+			\Ensure  局部极小值点
+			\Function{findLocalMin}{$currentNode$}
+				\If{$leftNode , rightNode$ don't exist}
+					\State \Return $currentNode.X$
+				\Else
+					\If{$leftNode.X>currentNode.X $ and $rightNode.X>currentNode.X $}
+						\State \Return $currentNode.X$
+					\EndIf
+				\EndIf
+				\If{$leftNode$ exists and $leftNode.X<currentNode.X$}
+					\State \Return \Call{findLocalMin}{$leftNode$}
+				\EndIf
+				\If{$leftNode$ exists and $leftNode.X<currentNode.X$}
+					\State \Return \Call{findLocalMin}{$leftNode$}
+				\EndIf
+			\EndFunction
+		\end{algorithmic}
+	\end{algorithm}
+\subsection{子问题简化图}
+	\includegraphics[width = 1\textwidth]{subproblem-reduction-graph-3.jpg}
+	
+\subsection{算法正确性证明}
+	略
+
+\subsection{算法复杂性分析}
+	略
+\clearpage %另起一页
+\end{document}
